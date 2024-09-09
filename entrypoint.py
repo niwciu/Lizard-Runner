@@ -1,6 +1,8 @@
 import argparse
 import subprocess
 import sys
+import os
+import os.path
 from pathlib import Path
 
 print("::group::ValidateArguments")
@@ -36,6 +38,24 @@ args = parser.parse_args()
 def surround_double_quotes(x: str):
     return '"' + str(x) + '"'
 
+
+def is_safe_path(path):
+    return os.path.isabs(path) and not os.path.islink(path) and '..' not in path
+
+def set_action_output(output_name, value) :
+    output_path = os.getenv('GITHUB_OUTPUT')
+
+    if output_path:
+        if is_safe_path(output_path):
+            try:
+                with open(output_path, "a") as f:
+                    print("{0}={1}".format(output_name,value), file=f)
+            except OSError as e:
+                print("::set-output name={0}::{1}".format(output_name, value))
+        else:
+            print("::set-output name={0}::{1}".format(output_name, value))
+    else:
+        print("::set-output name={0}::{1}".format(output_name, value))
 
 lizard_args: list = ["lizard"]
 
@@ -155,8 +175,9 @@ print(result.stderr)
 with open(args.cli_output_file, mode="w") as f:
     f.write(result.stdout)
 
-print("::set-output name=cli_output_path::" + str(args.cli_output_file))
+set_action_output("cli_output_path",str(args.cli_output_file))
+
 if output_file_flag:
-    print("::set-output name=result_output_path::" + str(output_file_path))
+    set_action_output("result_output_path",str(output_file_path))
 
 sys.exit(result.returncode)
