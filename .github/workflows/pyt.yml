@@ -16,13 +16,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install moreutils -y
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.9"
       - name: install python-taint
         run: pip install python-taint
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: run pyt
         run: |
           pyt -o pyt.txt ./
